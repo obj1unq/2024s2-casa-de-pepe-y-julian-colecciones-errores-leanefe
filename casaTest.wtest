@@ -1,0 +1,82 @@
+import casa.*
+import cosas.*
+import cuentas.*
+
+describe "Casa de Pepe y Julián" {
+  test "Sobre las cosas que se compran" {
+    casaDePepeYJulian.comprar(heladera)
+    casaDePepeYJulian.comprar(cama)
+    casaDePepeYJulian.comprar(plancha)
+    assert.equals([heladera, cama, plancha], casaDePepeYJulian.cosas())
+    assert.equals(3, casaDePepeYJulian.cantidadDeCosasCompradas())
+    assert.that(casaDePepeYJulian.tieneAlgun(electrodomestico))
+    assert.that(casaDePepeYJulian.tieneAlgun(mueble))
+    assert.notThat(casaDePepeYJulian.tieneAlgun(comida))
+    assert.that(casaDePepeYJulian.vieneDeComprar(electrodomestico))
+    assert.notThat(casaDePepeYJulian.vieneDeComprar(mueble))
+    assert.that(casaDePepeYJulian.esDerrochona())
+    assert.equals([heladera, plancha], casaDePepeYJulian.comprados(electrodomestico))
+    assert.equals([cama], casaDePepeYJulian.comprados(mueble))
+    assert.equals([], casaDePepeYJulian.comprados(comida))
+    assert.notThat(casaDePepeYJulian.malaEpoca())
+    assert.equals([tiraDeAsado, paqueteDeFideos], casaDePepeYJulian.queFaltaComprar([tiraDeAsado, plancha, paqueteDeFideos]))
+    assert.that(casaDePepeYJulian.faltaComida())
+    assert.equals([electrodomestico, mueble], casaDePepeYJulian.categoriasCompradas())
+  }
+
+  test "Cuenta con gastos" {
+    cuentaConGastos.costoXOperacion(20)
+    cuentaConGastos.depositar(1000)
+    assert.equals(980, cuentaConGastos.saldo())
+  }
+
+  test "Cuenta combinada" {
+    cuentaCombinada.cuentaPrimaria(cuentaConGastos)
+    cuentaCombinada.cuentaPrimaria().costoXOperacion(50)
+    cuentaCombinada.cuentaSecundaria(cuentaCorriente)
+    cuentaCombinada.cuentaSecundaria().saldo(500)
+    cuentaCombinada.depositar(100)
+    cuentaCombinada.extraer(200)
+    assert.equals(50, cuentaCombinada.cuentaPrimaria().saldo())
+    assert.equals(300, cuentaCombinada.cuentaSecundaria().saldo())
+    assert.equals(350, cuentaCombinada.saldo())
+  }
+
+  test "Cuenta se ve afectada por compras" {
+    casaDePepeYJulian.cuenta(cuentaCorriente)
+    casaDePepeYJulian.cuenta().saldo(1000)
+    casaDePepeYJulian.comprar(tiraDeAsado)
+    casaDePepeYJulian.comprar(paqueteDeFideos)
+    assert.equals(600, casaDePepeYJulian.cuenta().saldo())
+    }
+}
+
+describe "Cuenta corriente modificada" {
+    test "Puedo extraer 900 al tener 1000" {
+        cuentaCorriente.saldo(1000)
+        cuentaCorriente.extraer(900)
+        assert.equals(100, cuentaCorriente.saldo())
+    }
+
+    test "No puedo extraer 1200 al tener 1000" {
+        cuentaCorriente.saldo(1000)
+        cuentaCorriente.extraer(1200)
+        assert.equals(1000, cuentaCorriente.saldo())
+    }
+
+    test "Puedo comprar asado con 1000 en cuenta corriente" {
+        casaDePepeYJulian.cuenta(cuentaCorriente)
+        casaDePepeYJulian.cuenta().saldo(1000)
+        casaDePepeYJulian.comprar(tiraDeAsado)
+        assert.equals([tiraDeAsado], casaDePepeYJulian.cosas())
+        assert.equals(1000-tiraDeAsado.precio(), casaDePepeYJulian.cuenta().saldo())
+    }
+
+    test "No puedo comprar placha con 1000 en cuenta corriente" {
+        casaDePepeYJulian.cuenta(cuentaCorriente)
+        casaDePepeYJulian.cuenta().saldo(1000)
+        casaDePepeYJulian.comprar(plancha)
+        assert.equals([], casaDePepeYJulian.cosas())
+        assert.equals(1000, casaDePepeYJulian.cuenta().saldo())
+    }
+}
